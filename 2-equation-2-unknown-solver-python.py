@@ -75,8 +75,9 @@ def select_parents_roulette(
     fitness: is (n,) np array that is represent the fitness for each people
     num_parent detect the number of parent that we use
     """
-    score=1/(1+fitness)
+    score=(1/(1+fitness))**1.5
     p=score/np.sum(score)
+    
     index_choose=np.random.choice(len(population),size=num_parent,p=p)
     return population[index_choose]
 
@@ -101,11 +102,15 @@ def crossover(parents:np.ndarray,
         parents2=parents[index2]
         children1=np.array([parents1[0],parents2[1]])
         children2=np.array([parents2[0],parents1[1]])
-        
-        if(fitness_one(children1,equation1,equation2)<fitness_one(children2,equation1,equation2)):
-            new_population.append(children1)
-        else:
-            new_population.append(children2)
+        children3=np.array([parents2[0],parents2[1]])
+        children4=np.array([parents1[0],parents1[1]])
+        childrens=[children1,children2,children3,children4]
+        fitness=[fitness_one(children1,equation1,equation2),
+                 fitness_one(children2,equation1,equation2),
+                 fitness_one(children3,equation1,equation2),
+                 fitness_one(children4,equation1,equation2)]
+        index=np.argmin(fitness)
+        new_population.append(childrens[index])
     return np.array(new_population)
 
 def mutate(population: np.ndarray, mutation_rate=0.1, mutation_strength=10.0, seed=None):
@@ -136,7 +141,36 @@ def mutate(population: np.ndarray, mutation_rate=0.1, mutation_strength=10.0, se
 
     return population
 
+def memetic(population,equation1,equation2,population_size,power):
+    fitnesses = np.array([fitness_one(person, equation1, equation2) for person in population])
 
+    # Get the sorted indices (lowest fitness first)
+    sorted_indices = np.argsort(fitnesses)
+
+    # Sort the population accordingly
+    sorted_population = population[sorted_indices]
+
+    sorted_population=sorted_population[::-1]
+    for i in range(100):
+        noise = np.random.uniform(0,power)
+
+        neighbor1=np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]+noise])
+        neighbor2=np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]-noise])
+        neighbor3=np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]+noise])
+        neighbor4=np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]-noise])
+        neighbors=[neighbor1,neighbor2,neighbor3,neighbor4]
+        fitness=[fitness_one(neighbor1,equation1,equation2),
+                 fitness_one(neighbor2,equation1,equation2),
+                 fitness_one(neighbor3,equation1,equation2),
+                 fitness_one(neighbor4,equation1,equation2)]
+        index=np.argmin(fitness)
+        selected_neighbor=neighbors[index]
+        population[i][0]=selected_neighbor[0]
+        population[i][1]=selected_neighbor[1]
+
+
+    return population
+    pass
 
 def solve_2_quation_2_umknown(a1,b1,c1,a2,b2,c2):
     """
@@ -153,15 +187,17 @@ def solve_2_quation_2_umknown(a1,b1,c1,a2,b2,c2):
     equation2={
         'a2':a2,'b2':b2,'c2':c2
     }
-    population_size=10000
+    population_size=3000
     population=init_random_population(population_size,seed=42) # create random 2*10000 population
     #population=standard_scaled(population,equation1,equation2)
-    for i in range(100):
+    for i in range(200):
         fitness=fitness_total(population,equation1,equation2,population_size) # compute the fitness of all population
         print(f"Min Fitness {i+1}: {np.min(fitness)}")
+        print(f"Max Fitness {i+1}: {np.max(fitness)}")
         selected_parents=select_parents_roulette(population,fitness,2*population_size) # chose random base probability parent for the next generation
         population=crossover(selected_parents,population_size,42,equation1,equation2)
-        population = mutate(population, mutation_rate=0.05, mutation_strength=50, seed=i)
+        population = mutate(population, mutation_rate=0.5, mutation_strength=50, seed=i)
+        population=memetic(population,equation1,equation2,population_size,(1/(i+1)))
        
     return fitness,population 
 
