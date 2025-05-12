@@ -6,8 +6,8 @@ def init_random_population(population_size,seed=42):
     this function return 2*10000 sample population
     """
     np.random.seed(seed)
-    x=np.random.uniform(-1000,1000,population_size)
-    y=np.random.uniform(-1000,1000,population_size)
+    x=np.random.uniform(-1000000,1000000,population_size)
+    y=np.random.uniform(-1000000,1000000,population_size)
     population=np.column_stack((x,y))
     return population
 
@@ -190,14 +190,14 @@ def solve_2_quation_2_umknown(a1,b1,c1,a2,b2,c2):
     population_size=3000
     population=init_random_population(population_size,seed=42) # create random 2*10000 population
     #population=standard_scaled(population,equation1,equation2)
-    for i in range(200):
+    for i in range(2000):
         fitness=fitness_total(population,equation1,equation2,population_size) # compute the fitness of all population
         print(f"Min Fitness {i+1}: {np.min(fitness)}")
         print(f"Max Fitness {i+1}: {np.max(fitness)}")
         selected_parents=select_parents_roulette(population,fitness,2*population_size) # chose random base probability parent for the next generation
         population=crossover(selected_parents,population_size,42,equation1,equation2)
-        population = mutate(population, mutation_rate=0.5, mutation_strength=50, seed=i)
-        population=memetic(population,equation1,equation2,population_size,(1/(i+1)))
+        population = mutate(population, mutation_rate=0.1, mutation_strength=50, seed=i)
+        population=memetic(population,equation1,equation2,population_size,100*(1/(i+1)))
        
     return fitness,population 
 
