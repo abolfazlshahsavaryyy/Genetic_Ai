@@ -4,11 +4,38 @@ import numpy as np
 
 def init_random_population(pop_size, seed=42):
     np.random.seed(seed)
-    x = np.random.uniform(-1e6, 1e6, pop_size)
-    y = np.random.uniform(-1e6, 1e6, pop_size)
+    x = np.random.uniform(-1e9, 1e9, pop_size)
+    y = np.random.uniform(-1e9, 1e9, pop_size)
     return np.column_stack((x, y))
 
 
+
+def standard_pop(pop,pop_size,eq1,eq2):
+    params=[10**x for x in range(-8,9)]
+    params+=[5*(10**x) for x in range(-8,9)]
+    for i in range(pop_size):
+        neighbor=[]
+        for j in params:
+            neighbor.append(np.array([pop[i][0]*j,pop[i][1]]))
+        
+        fitnesses = np.array([fitness_one(np.array([person[0],person[1]]),eq1,eq2) for person in neighbor])
+        sorted_indices = np.argsort(fitnesses)
+
+        sorted_pop = [neighbor[idx] for idx in sorted_indices]
+        pop[i][0]=sorted_pop[0][0]
+        neighbor=[]
+        for j in params:
+            neighbor.append(np.array([pop[i][0],pop[i][1]*j]))
+        
+        fitnesses = np.array([fitness_one(np.array([person[0],person[1]]),eq1,eq2) for person in neighbor])
+        sorted_indices = np.argsort(fitnesses)
+
+        sorted_pop = [neighbor[idx] for idx in sorted_indices]
+        pop[i][1]=sorted_pop[0][1]
+        neighbor=[]
+        
+
+    return pop
 # ==== Fitness Functions ====
 
 def fitness_one(individual, eq1, eq2):
@@ -86,15 +113,19 @@ def memetic(population,equation1,equation2,population_size,power):
     for i in range(500):
         noise = np.random.uniform(0,power)
 
-        neighbor1=np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]+noise])
-        neighbor2=np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]-noise])
-        neighbor3=np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]+noise])
-        neighbor4=np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]-noise])
-        neighbors=[neighbor1,neighbor2,neighbor3,neighbor4]
-        fitness=[fitness_one(neighbor1,equation1,equation2),
-                 fitness_one(neighbor2,equation1,equation2),
-                 fitness_one(neighbor3,equation1,equation2),
-                 fitness_one(neighbor4,equation1,equation2)]
+
+        neighbors=[
+            np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]+noise]),
+            np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]-noise]),
+            np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]+noise]),
+            np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]-noise]),
+            np.array([population[population_size-i-1][0]+noise,population[population_size-i-1][1]]),
+            np.array([population[population_size-i-1][0]-noise,population[population_size-i-1][1]]),
+            np.array([population[population_size-i-1][0],population[population_size-i-1][1]-noise]),
+            np.array([population[population_size-i-1][0],population[population_size-i-1][1]+noise]),
+        ]
+
+        fitness=[fitness_one(person,equation1,equation2) for person in neighbors]
         index=np.argmin(fitness)
         selected_neighbor=neighbors[index]
         population[i][0]=selected_neighbor[0]
@@ -114,6 +145,7 @@ def solve_2_equations_2_unknowns(a1, b1, c1, a2, b2, c2):
     generations = 2000
 
     population = init_random_population(pop_size, seed=42)
+    population=standard_pop(population,pop_size,eq1,eq2)
 
     for gen in range(generations):
         fitness = fitness_total(population, eq1, eq2)
@@ -126,11 +158,12 @@ def solve_2_equations_2_unknowns(a1, b1, c1, a2, b2, c2):
         population = crossover(parents, pop_size, seed=42, eq1=eq1, eq2=eq2)
         population = mutate(population, mutation_rate=0.2, mutation_strength=50, seed=gen)
 
-        population = memetic(population, eq1, eq2, pop_size, power= np.min(fitness)* (1 / (gen + 1)))
-        if(gen>500):
-            population = memetic(population, eq1, eq2, pop_size, power= np.min(fitness)* (1 / (gen + 1))**4)
+        population = memetic(population, eq1, eq2, pop_size, power= np.min(fitness)* (1 / (gen + 1)**0.5))
+        #population=memetic(population,eq1,eq2,pop_size,power= np.min(fitness)* (1 / (gen + 1)))
+        #population=memetic(population,eq1,eq2,pop_size,power= np.min(fitness)* (1 / (gen + 1))**1.5)
+        #population=memetic(population,eq1,eq2,pop_size,power= np.min(fitness)* (1 / (gen + 1))**2)
 
-        if(np.min(fitness)<1e-3):
+        if(np.min(fitness)<1e-4):
             break
 
     final_fitness = fitness_total(population, eq1, eq2)
@@ -146,4 +179,4 @@ def solve_2_equations_2_unknowns(a1, b1, c1, a2, b2, c2):
     return best_solution, best_fit
 
 
-solve_2_equations_2_unknowns(123,456,-7890,321,654,-987)
+solve_2_equations_2_unknowns(1,2,-4,4,4,-12)

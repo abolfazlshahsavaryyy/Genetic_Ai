@@ -207,7 +207,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
 
 
 
-solve_3equation_3unknown(3000,2000,42)
+solve_3equation_3unknown(3000,2000,12)
 
 
 
