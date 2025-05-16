@@ -2,11 +2,50 @@ import numpy as np
 
 def init(pop_size,seed=42):
     np.random.seed(seed)
-    x = np.random.uniform(-1e6, 1e6, pop_size)
-    y = np.random.uniform(-1e6, 1e6, pop_size)
-    z = np.random.uniform(-1e6, 1e6, pop_size)
+    x = np.random.uniform(-1e9, 1e9, pop_size)
+    y = np.random.uniform(-1e9, 1e9, pop_size)
+    z = np.random.uniform(-1e9, 1e9, pop_size)
     return np.column_stack((x, y,z))
 
+def standard_pop(pop,pop_size):
+    params=[10**x for x in range(-8,9)]
+    for i in range(pop_size):
+        neighbor=[]
+        for j in params:
+            neighbor.append(np.array([pop[i][0]*j,pop[i][1],pop[i][2]]))
+        
+        fitnesses = np.array([fitness_one(person[0],person[1],person[2]) for person in neighbor])
+        sorted_indices = np.argsort(fitnesses)
+
+        sorted_pop = [neighbor[idx] for idx in sorted_indices]
+        pop[i][0]=sorted_pop[0][0]
+        neighbor=[]
+        for j in params:
+            neighbor.append(np.array([pop[i][0],pop[i][1]*j,pop[i][2]]))
+        
+        fitnesses = np.array([fitness_one(person[0],person[1],person[2]) for person in neighbor])
+        sorted_indices = np.argsort(fitnesses)
+
+        sorted_pop = [neighbor[idx] for idx in sorted_indices]
+        pop[i][1]=sorted_pop[0][1]
+        neighbor=[]
+        for j in params:
+            neighbor.append(np.array([pop[i][0],pop[i][1],pop[i][2]*j]))
+        
+        fitnesses = np.array([fitness_one(person[0],person[1],person[2]) for person in neighbor])
+        sorted_indices = np.argsort(fitnesses)
+
+        sorted_pop = [neighbor[idx] for idx in sorted_indices]
+        pop[i][2]=sorted_pop[0][2]
+
+    return pop
+
+
+        
+
+
+
+        
 def equation1(x,y,z):
     
     res=(6*x) + (-2*y) + (8*z) - 20
@@ -126,6 +165,7 @@ def memetic(pop,pop_size,power):
 ######################################################################################
 def solve_3equation_3unknown(pop_size,generation,seed):
     pop=init(pop_size,seed)
+    pop=standard_pop(pop,pop_size)
     counter=0
     fitness_before=0
     nois=False
@@ -149,7 +189,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         
         pop=memetic(pop,pop_size,np.min(fitness)*(1/(gen+1)))
         
-        if(np.min(fitness)<0.01):
+        if(np.min(fitness)<0.001):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -166,13 +206,13 @@ def solve_3equation_3unknown(pop_size,generation,seed):
 
 
 
-print(fitness_one(4.91,4.222,-0.132))
-#solve_3equation_3unknown(3000,2000,42)
+
+solve_3equation_3unknown(3000,2000,42)
 
 
 
 
-
+#print(fitness_one(4.915641, 4.216009,-0.132744))
 
 
 
