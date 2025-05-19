@@ -114,43 +114,41 @@ def mutate(pop, mutation_rate=0.1, mutation_strength=10.0, seed=None):
 
     return pop
 
-def memetic(pop,pop_size,power):
-    fitnesses = np.array([fitness_one(person[0],person[1],person[2]) for person in pop])
-    sorted_indices = np.argsort(fitnesses)
+import numpy as np
 
-    # Sort the population accordingly
+def memetic(pop, pop_size, power):
+    # Evaluate fitness for each individual in the population
+    fitnesses = np.array([fitness_one(*person) for person in pop])
+    
+    # Sort the population by fitness (descending order)
+    sorted_indices = np.argsort(fitnesses)[::-1]
     sorted_pop = pop[sorted_indices]
 
-    sorted_pop=sorted_pop[::-1]
-    noises=[ np.random.uniform(0,power) for _ in range(1)]
-    for i in range(500):
-        neighbors=[]
-        for nois in noises:
-            neighbors+=[
-               
-                np.array([sorted_pop[pop_size-i-1][0]+nois,sorted_pop[pop_size-i-1][1]+nois,sorted_pop[pop_size-i-1][2]+nois]),
-                np.array([sorted_pop[pop_size-i-1][0]-nois,sorted_pop[pop_size-i-1][1]+nois,sorted_pop[pop_size-i-1][2]+nois]),
-                np.array([sorted_pop[pop_size-i-1][0]+nois,sorted_pop[pop_size-i-1][1]-nois,sorted_pop[pop_size-i-1][2]+nois]),
-                np.array([sorted_pop[pop_size-i-1][0]+nois,sorted_pop[pop_size-i-1][1]+nois,sorted_pop[pop_size-i-1][2]-nois]),
-                np.array([sorted_pop[pop_size-i-1][0]-nois,sorted_pop[pop_size-i-1][1]-nois,sorted_pop[pop_size-i-1][2]+nois]),
-                np.array([sorted_pop[pop_size-i-1][0]-nois,sorted_pop[pop_size-i-1][1]+nois,sorted_pop[pop_size-i-1][2]-nois]),
-                np.array([sorted_pop[pop_size-i-1][0]+nois,sorted_pop[pop_size-i-1][1]-nois,sorted_pop[pop_size-i-1][2]-nois]),
-                np.array([sorted_pop[pop_size-i-1][0]-nois,sorted_pop[pop_size-i-1][1]-nois,sorted_pop[pop_size-i-1][2]-nois]),
-                np.array([sorted_pop[pop_size-i-1][0]-nois,sorted_pop[pop_size-i-1][1],sorted_pop[pop_size-i-1][2]]),
-                np.array([sorted_pop[pop_size-i-1][0],sorted_pop[pop_size-i-1][1]-nois,sorted_pop[pop_size-i-1][2]]),
-                np.array([sorted_pop[pop_size-i-1][0],sorted_pop[pop_size-i-1][1],sorted_pop[pop_size-i-1][2]-nois]),
-                np.array([sorted_pop[pop_size-i-1][0]+nois,sorted_pop[pop_size-i-1][1],sorted_pop[pop_size-i-1][2]]),
-                np.array([sorted_pop[pop_size-i-1][0],sorted_pop[pop_size-i-1][1]+nois,sorted_pop[pop_size-i-1][2]]),
-                np.array([sorted_pop[pop_size-i-1][0],sorted_pop[pop_size-i-1][1],sorted_pop[pop_size-i-1][2]+nois]),
-            ]
-        fitnesses=[fitness_one(n[0],n[1],n[2]) for n in neighbors]
-        index=np.argmin(fitnesses)
-        selected_neigbor=neighbors[index]
-        pop[i][0]=selected_neigbor[0]
-        pop[i][1]=selected_neigbor[1]
-        pop[i][2]=selected_neigbor[2]
+    # Generate a single noise value (based on original code)
+    noise = np.random.uniform(0, power)
+
+    # Define relative directions for neighbor generation
+    directions = np.array([
+        [ 1,  1,  1], [-1,  1,  1], [ 1, -1,  1], [ 1,  1, -1],
+        [-1, -1,  1], [-1,  1, -1], [ 1, -1, -1], [-1, -1, -1],
+        [-1,  0,  0], [ 0, -1,  0], [ 0,  0, -1],
+        [ 1,  0,  0], [ 0,  1,  0], [ 0,  0,  1]
+    ]) * noise
+
+    # Apply local search (memetic refinement)
+    for i in range(min(500, pop_size)):
+        individual = sorted_pop[pop_size - i - 1]
+        neighbors = individual + directions
+
+        # Evaluate all neighbors
+        neighbor_fitnesses = np.array([fitness_one(*n) for n in neighbors])
+        best_neighbor = neighbors[np.argmin(neighbor_fitnesses)]
+
+        # Update individual in the population
+        pop[i] = best_neighbor
 
     return pop
+
 
 
 
@@ -188,7 +186,10 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         pop=mutate(pop,seed=seed)
         
         pop=memetic(pop,pop_size,np.min(fitness)*(1/(gen+1)))
-        
+        if counter == 4:
+            print("⚠️  Stagnation detected. Injecting noise.")
+            pop = mutate(pop, mutation_rate=0.5, mutation_strength=50.0)
+            counter = 0
         if(np.min(fitness)<0.001):
             break
 
