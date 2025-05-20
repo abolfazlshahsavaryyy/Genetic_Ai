@@ -74,22 +74,22 @@ def standard_pop(pop,pop_size):
 
 def equation1(x,y,z,t):
     
-    res=(1/15)*x+(-2)*y+(-15)*z+(-4/5)*t-3
+    res=(1/15)*x+(-2)*y+(-15)*z+(-4/5)*t-3000
     return res
 def equation2(x,y,z,t):
 
-    res=(-2.5)*x+(-9/4)*y+(12)*z+(-1)*t-17
+    res=(-2.5)*x+(-9/4)*y+(12)*z+(-1)*t-17000
     return res
 
 def equation3(x,y,z,t):
 
-    res = (-13)*x+(0.3)*y+(-6)*z+(-2/5)*t-17  
+    res = (-13)*x+(0.3)*y+(-6)*z+(-2/5)*t-17000  
     return res
 
 
 def equation4(x,y,z,t):
 
-    res = (1/2)*x+(2)*y+(7/4)*z+(4/3)*t+9  
+    res = (1/2)*x+(2)*y+(7/4)*z+(4/3)*t+9000  
     return res
 
 def fitness_one(x,y,z,t):
@@ -164,14 +164,14 @@ def memetic(pop, pop_size, power):
 
     # Scale all directions by the same noise power
     directions = directions * power
-
+    
     # Perform local search for top individuals (up to 500 or pop_size)
     for i in range(min(500, pop_size)):
         base = sorted_pop[pop_size - i - 1]  # Choose from worst to best
 
         # Generate neighbors by adding all direction vectors
         neighbors = base + directions
-
+       
         # Evaluate neighbors
         neighbor_fitnesses = np.array([fitness_one(*n) for n in neighbors])
 
@@ -190,14 +190,17 @@ def solve_3equation_3unknown(pop_size,generation,seed):
     counter=0
     fitness_before=0
     nois=False
+    gen1=0
+    min_fit=0
     for gen in range(generation):
         
         fitness=fitness_total(pop,pop_size)
+        fitness_before=min_fit
         min_fit=np.min(fitness)
         print(f"Generation {gen+1}:")
         print(f"  ➤ Min Fitness: {min_fit:.6f}")
         print(f"  ➤ Max Fitness: {np.max(fitness):.6f}")
-        if(min_fit!=fitness_before):
+        if(np.abs(min_fit-fitness_before)>min_fit/100):
             fitness_before=min_fit
             counter=0
         else:
@@ -208,14 +211,16 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         pop=crossover(parents,pop_size,seed)
         pop=mutate(pop,seed=seed)
         
-        pop=memetic(pop,pop_size,np.min(fitness))
+        pop=memetic(pop,pop_size,(1/(1+gen1))*np.min(fitness))
         if counter == 2:
             print("⚠️  Stagnation detected. Injecting noise.")
-            pop = mutate(pop, mutation_rate=1, mutation_strength=1)
+            pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit)
             counter = 0
+            gen1=1
         
         if(np.min(fitness)<0.01):
             break
+        gen1+=1
 
     final_fitness = fitness_total(pop,pop_size)
     best_idx = np.argmin(final_fitness)
