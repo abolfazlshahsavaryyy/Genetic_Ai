@@ -14,6 +14,7 @@ def standard_pop(pop,pop_size):
         for j in params:
             neighbor.append(np.array([pop[i][0]*j,pop[i][1]]))
         
+        
         fitnesses = np.array([fitness_one(person[0],person[1]) for person in neighbor])
         sorted_indices = np.argsort(fitnesses)
 
@@ -35,11 +36,11 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y):
     
-    res=x + 2*y - 4000
+    res=x + 2*y - 4000000
     return res
 def equation2(x,y):
 
-    res=4*x + 4*y - 12000
+    res=4*x + 4*y - 12000000
     return res
 def fitness_one(x,y):
     loss=np.abs(equation1(x,y))
@@ -137,7 +138,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/5)
             counter = 0
-        if(np.min(fitness)<0.000001):
+        if(np.min(fitness)<1e-15):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -152,7 +153,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
     print(f"  Fitness = {best_fit:.6f}")
 
 
-solve_3equation_3unknown(500,10000,12)
+solve_3equation_3unknown(500,10000,432)
 
 
 

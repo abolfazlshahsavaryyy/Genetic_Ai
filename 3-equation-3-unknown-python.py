@@ -50,16 +50,16 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y,z):
     
-    res=(6*x) + (-2*y) + (8*z) - 20
+    res=(6*x) + (-2*y) + (8*z) - 20000
     return res
 def equation2(x,y,z):
 
-    res=(y) + (8*x) * (z) +1#𝑦 + 8𝑥 × 𝑧 = −1
+    res=(y) + (8*x) * (z) +1000#𝑦 + 8𝑥 × 𝑧 = −1
     return res
 
 def equation3(x,y,z):
 
-    res = (2*z)*(6/x) + (1.5*y) - 6
+    res = (2*z)*(6/x) + (1.5*y) - 6000
     return res
 
 def fitness_one(x,y,z):
@@ -137,9 +137,10 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         fitness=fitness_total(pop,pop_size)
         fitness_before=min_fit
         min_fit=np.min(fitness)
-        print(f"Generation {gen+1}:")
-        print(f"  ➤ Min Fitness: {min_fit:.6f}")
-        print(f"  ➤ Max Fitness: {np.max(fitness):.6f}")
+        if(gen%10==1):
+            print(f"Generation {gen+1}:")
+            print(f"  ➤ Min Fitness: {min_fit:.6f}")
+            print(f"  ➤ Max Fitness: {np.max(fitness):.6f}")
         if(np.abs(min_fit-fitness_before)>min_fit/200):
             fitness_before=min_fit
             counter=0
@@ -153,7 +154,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
             counter = 0
-        if(np.min(fitness)<0.000001):
+        if(np.min(fitness)<1e-8):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -171,7 +172,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
 
 
 
-solve_3equation_3unknown(1000,2000,12)
+solve_3equation_3unknown(500,2000,12)
 
 
 

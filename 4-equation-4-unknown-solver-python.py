@@ -58,22 +58,22 @@ def standard_pop(pop,pop_size):
 
 def equation1(x,y,z,t):
     
-    res=(1/15)*x+(-2)*y+(-15)*z+(-4/5)*t-3
+    res=(1/15)*x+(-2)*y+(-15)*z+(-4/5)*t-30000000
     return res
 def equation2(x,y,z,t):
 
-    res=(-2.5)*x+(-9/4)*y+(12)*z+(-1)*t-17
+    res=(-2.5)*x+(-9/4)*y+(12)*z+(-1)*t-170000000
     return res
 
 def equation3(x,y,z,t):
 
-    res = (-13)*x+(0.3)*y+(-6)*z+(-2/5)*t-17  
+    res = (-13)*x+(0.3)*y+(-6)*z+(-2/5)*t-170000000
     return res
 
 
 def equation4(x,y,z,t):
 
-    res = (1/2)*x+(2)*y+(7/4)*z+(4/3)*t+9  
+    res = (1/2)*x+(2)*y+(7/4)*z+(4/3)*t+90000000
     return res
 
 def fitness_one(x,y,z,t):
@@ -161,8 +161,8 @@ def solve_4equation_4unknown(pop_size,generation,seed):
         fitness_before=min_fit
         min_fit=np.min(fitness)
         print(f"Generation {gen+1}:")
-        print(f"  ➤ Min Fitness: {min_fit:.8f}")
-        print(f"  ➤ Max Fitness: {np.max(fitness):.8f}")
+        print(f"  ➤ Min Fitness: {min_fit:.11f}")
+        print(f"  ➤ Max Fitness: {np.max(fitness):.11f}")
         if(np.abs(min_fit-fitness_before)>min_fit/200):
             fitness_before=min_fit
             counter=0
@@ -176,7 +176,7 @@ def solve_4equation_4unknown(pop_size,generation,seed):
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
             counter = 0
-        if(np.min(fitness)<0.0000001):
+        if(np.min(fitness)<1e-10):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -192,4 +192,4 @@ def solve_4equation_4unknown(pop_size,generation,seed):
     print(f"  Fitness = {best_fit:.6f}")
 
 
-solve_4equation_4unknown(1000,2000,43)
+solve_4equation_4unknown(1000,2000,3)
