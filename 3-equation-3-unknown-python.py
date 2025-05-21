@@ -9,6 +9,8 @@ def init(pop_size,seed=42):
 
 def standard_pop(pop,pop_size):
     params=[10**x for x in range(-8,9)]
+    params+=[3**x for x in range(-8,9)]
+    params+=[6**x for x in range(-8,9)]
     for i in range(pop_size):
         neighbor=[]
         for j in params:
@@ -48,16 +50,16 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y,z):
     
-    res=(6*x) + (-2*y) + (8*z) - 20
+    res=(6*x) + (-2*y) + (8*z) - 200000
     return res
 def equation2(x,y,z):
 
-    res=(y) + (8*x) * (z) +1 #𝑦 + 8𝑥 × 𝑧 = −1
+    res=(y) + (8*x) * (z) +10000 #𝑦 + 8𝑥 × 𝑧 = −1
     return res
 
 def equation3(x,y,z):
 
-    res = (2*z)*(6/x) + (1.5*y) - 6  
+    res = (2*z)*(6/x) + (1.5*y) - 60000  
     return res
 
 def fitness_one(x,y,z):
@@ -151,7 +153,8 @@ def memetic(pop, pop_size, power):
 
 
 
-
+def mean_coef(pop):
+    return np.mean(pop)
 
 
 
@@ -166,31 +169,31 @@ def solve_3equation_3unknown(pop_size,generation,seed):
     pop=standard_pop(pop,pop_size)
     counter=0
     fitness_before=0
-    nois=False
+    min_fit=0
     for gen in range(generation):
         
         fitness=fitness_total(pop,pop_size)
+        fitness_before=min_fit
         min_fit=np.min(fitness)
         print(f"Generation {gen+1}:")
         print(f"  ➤ Min Fitness: {min_fit:.6f}")
         print(f"  ➤ Max Fitness: {np.max(fitness):.6f}")
-        if(min_fit!=fitness_before):
+        if(np.abs(min_fit-fitness_before)>min_fit/200):
             fitness_before=min_fit
             counter=0
         else:
             counter+=1
-            if(counter==4):
-                nois=True
+                
         parents = select_parents_roulette(pop, fitness, 2 * pop_size)
         pop=crossover(parents,pop_size,seed)
         pop=mutate(pop,seed=seed)
-        
-        pop=memetic(pop,pop_size,np.min(fitness)*(1/(gen+1)))
-        if counter == 4:
+        coef=mean_coef(pop)
+        pop=memetic(pop,pop_size,min_fit*(1/(gen+1)))
+        if counter == 6:
             print("⚠️  Stagnation detected. Injecting noise.")
-            pop = mutate(pop, mutation_rate=0.5, mutation_strength=50.0)
+            pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
             counter = 0
-        if(np.min(fitness)<0.001):
+        if(np.min(fitness)<0.0001):
             break
 
     final_fitness = fitness_total(pop,pop_size)
