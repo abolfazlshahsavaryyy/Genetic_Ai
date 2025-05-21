@@ -50,16 +50,16 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y,z):
     
-    res=(6*x) + (-2*y) + (8*z) - 200000
+    res=(6*x) + (-2*y) + (8*z) - 20
     return res
 def equation2(x,y,z):
 
-    res=(y) + (8*x) * (z) +10000 #𝑦 + 8𝑥 × 𝑧 = −1
+    res=(y) + (8*x) * (z) +1#𝑦 + 8𝑥 × 𝑧 = −1
     return res
 
 def equation3(x,y,z):
 
-    res = (2*z)*(6/x) + (1.5*y) - 60000  
+    res = (2*z)*(6/x) + (1.5*y) - 6
     return res
 
 def fitness_one(x,y,z):
@@ -97,7 +97,16 @@ def crossover(parents, pop_size, seed):
             np.array([p1[0], p2[1],p2[2]]),
             np.array([p2[0], p1[1],p2[2]]),
             np.array([p2[0], p2[1],p2[2]]),
+            np.array([(p2[0]+p1[0])/2, (p1[1]+p2[1])/2,(p2[2]+p1[2])/2]),
         ]
+        for _ in range(10):
+            alpha = np.random.rand()
+            child = np.array([
+                alpha * p1[0] + (1 - alpha) * p2[0],
+                alpha * p1[1] + (1 - alpha) * p2[1],
+                alpha * p1[2] + (1 - alpha) * p2[2]
+            ])
+            children.append(child)
         fitness_vals = [fitness_one(c[0],c[1],c[2]) for c in children]
         best_child = children[np.argmin(fitness_vals)]
         new_pop.append(best_child)
@@ -115,53 +124,6 @@ def mutate(pop, mutation_rate=0.1, mutation_strength=10.0, seed=None):
     pop[indices] += noise
 
     return pop
-
-import numpy as np
-
-def memetic(pop, pop_size, power):
-    # Evaluate fitness for each individual in the population
-    fitnesses = np.array([fitness_one(*person) for person in pop])
-    
-    # Sort the population by fitness (descending order)
-    sorted_indices = np.argsort(fitnesses)[::-1]
-    sorted_pop = pop[sorted_indices]
-
-    # Generate a single noise value (based on original code)
-    noise = np.random.uniform(0, power)
-
-    # Define relative directions for neighbor generation
-    directions = np.array([
-        [ 1,  1,  1], [-1,  1,  1], [ 1, -1,  1], [ 1,  1, -1],
-        [-1, -1,  1], [-1,  1, -1], [ 1, -1, -1], [-1, -1, -1],
-        [-1,  0,  0], [ 0, -1,  0], [ 0,  0, -1],
-        [ 1,  0,  0], [ 0,  1,  0], [ 0,  0,  1]
-    ]) * noise
-
-    # Apply local search (memetic refinement)
-    for i in range(min(500, pop_size)):
-        individual = sorted_pop[pop_size - i - 1]
-        neighbors = individual + directions
-
-        # Evaluate all neighbors
-        neighbor_fitnesses = np.array([fitness_one(*n) for n in neighbors])
-        best_neighbor = neighbors[np.argmin(neighbor_fitnesses)]
-
-        # Update individual in the population
-        pop[i] = best_neighbor
-
-    return pop
-
-
-
-def mean_coef(pop):
-    return np.mean(pop)
-
-
-
-
-
-
-
 
 ######################################################################################
 def solve_3equation_3unknown(pop_size,generation,seed):
@@ -186,14 +148,12 @@ def solve_3equation_3unknown(pop_size,generation,seed):
                 
         parents = select_parents_roulette(pop, fitness, 2 * pop_size)
         pop=crossover(parents,pop_size,seed)
-        pop=mutate(pop,seed=seed)
-        coef=mean_coef(pop)
-        pop=memetic(pop,pop_size,min_fit*(1/(gen+1)))
-        if counter == 6:
+        pop=mutate(pop,seed=seed,mutation_strength=min_fit/5,mutation_rate=0.2)
+        if counter == 3:
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
             counter = 0
-        if(np.min(fitness)<0.0001):
+        if(np.min(fitness)<0.000001):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -211,7 +171,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
 
 
 
-solve_3equation_3unknown(3000,2000,12)
+solve_3equation_3unknown(1000,2000,12)
 
 
 
