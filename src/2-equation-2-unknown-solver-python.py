@@ -36,11 +36,11 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y):
     
-    res=x + 2*y - 4000000
+    res=x + 2*y - 4
     return res
 def equation2(x,y):
 
-    res=4*x + 4*y - 12000000
+    res=4*x + 4*y - 12
     return res
 def fitness_one(x,y):
     loss=np.abs(equation1(x,y))
@@ -79,7 +79,7 @@ def crossover(parents, pop_size, seed):
         ]
 
         
-        for _ in range(10):
+        for _ in range(5):
             alpha = np.random.rand()
             child = np.array([
                 alpha * p1[0] + (1 - alpha) * p2[0],
@@ -138,7 +138,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/5)
             counter = 0
-        if(np.min(fitness)<1e-15):
+        if(np.min(fitness)<1e-7):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -149,7 +149,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
     print("\n✅ Best Approximate Solution:")
     print(f"  x = {best_solution[0]:.6f}")
     print(f"  y = {best_solution[1]:.6f}")
-   
+    print(f"last gen: {gen+1}")
     print(f"  Fitness = {best_fit:.6f}")
 
 

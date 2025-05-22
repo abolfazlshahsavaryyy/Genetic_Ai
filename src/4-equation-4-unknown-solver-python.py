@@ -176,7 +176,7 @@ def solve_4equation_4unknown(pop_size,generation,seed):
             print("⚠️  Stagnation detected. Injecting noise.")
             pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
             counter = 0
-        if(np.min(fitness)<1e-10):
+        if(np.min(fitness)<1e-15):
             break
 
     final_fitness = fitness_total(pop,pop_size)
