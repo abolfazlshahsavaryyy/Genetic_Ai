@@ -6,7 +6,7 @@ def init(pop_size,seed=42):
     y = np.random.uniform(-1e9, 1e9, pop_size)
     return np.column_stack((x, y))
 
-def standard_pop(pop,pop_size):
+def standard_pop(pop,pop_size,a1,b1,c1,a2,b2,c2):
     params=[10**x for x in range(-8,9)]
     
     for i in range(pop_size):
@@ -15,7 +15,7 @@ def standard_pop(pop,pop_size):
             neighbor.append(np.array([pop[i][0]*j,pop[i][1]]))
         
         
-        fitnesses = np.array([fitness_one(person[0],person[1]) for person in neighbor])
+        fitnesses = np.array([fitness_one(person[0],person[1],a1,b1,c1,a2,b2,c2) for person in neighbor])
         sorted_indices = np.argsort(fitnesses)
 
         sorted_pop = [neighbor[idx] for idx in sorted_indices]
@@ -24,7 +24,7 @@ def standard_pop(pop,pop_size):
         for j in params:
             neighbor.append(np.array([pop[i][0],pop[i][1]*j]))
         
-        fitnesses = np.array([fitness_one(person[0],person[1]) for person in neighbor])
+        fitnesses = np.array([fitness_one(person[0],person[1],a1,b1,c1,a2,b2,c2) for person in neighbor])
         sorted_indices = np.argsort(fitnesses)
 
         sorted_pop = [neighbor[idx] for idx in sorted_indices]
@@ -34,22 +34,22 @@ def standard_pop(pop,pop_size):
     return pop
 
         
-def equation1(x,y):
+def equation1(x,y,a,b,c):
     
-    res=x + 2*y - 40000
+    res=a*x + b*y +c
     return res
-def equation2(x,y):
+def equation2(x,y,a,b,c):
 
-    res=4*x + 4*y - 120000
+    res=a*x + b*y +c
     return res
-def fitness_one(x,y):
-    loss=np.abs(equation1(x,y))
-    loss+=np.abs(equation2(x,y))
+def fitness_one(x,y,a1,b1,c1,a2,b2,c2):
+    loss=np.abs(equation1(x,y,a1,b1,c1))
+    loss+=np.abs(equation2(x,y,a2,b2,c2))
     
     return loss
 
-def fitness_total(pop,pop_size):
-    fitness=[fitness_one(person[0],person[1]) for person in pop]
+def fitness_total(pop,pop_size,a1,b1,c1,a2,b2,c2):
+    fitness=[fitness_one(person[0],person[1],a1,b1,c1,a2,b2,c2) for person in pop]
     return np.array(fitness)
 
 def select_parents_roulette(pop, fitness, num_parents):
@@ -60,7 +60,7 @@ def select_parents_roulette(pop, fitness, num_parents):
 
 
 
-def crossover(parents, pop_size, seed):
+def crossover(parents, pop_size, seed,a1,b1,c1,a2,b2,c2):
     np.random.seed(seed)
     new_pop = []
     num_parents = len(parents)
@@ -88,7 +88,7 @@ def crossover(parents, pop_size, seed):
             children.append(child)
 
         
-        fitness_vals = [fitness_one(c[0], c[1]) for c in children]
+        fitness_vals = [fitness_one(c[0], c[1],a1,b1,c1,a2,b2,c2) for c in children]
         best_child = children[np.argmin(fitness_vals)]
         new_pop.append(best_child)
 
@@ -110,15 +110,15 @@ def mutate(pop, mutation_rate=0.1, mutation_strength=10.0, seed=None):
 
 
 ######################################################################################
-def solve_3equation_3unknown(pop_size,generation,seed):
+def solve_3equation_3unknown(pop_size,generation,seed,a1,b1,c1,a2,b2,c2):
     pop=init(pop_size,seed)
-    pop=standard_pop(pop,pop_size)
+    pop=standard_pop(pop,pop_size,a1,b1,c1,a2,b2,c2)
     counter=0
     fitness_before=0
     min_fit=0
     for gen in range(generation):
         
-        fitness=fitness_total(pop,pop_size)
+        fitness=fitness_total(pop,pop_size,a1,b1,c1,a2,b2,c2)
         fitness_before=min_fit
         min_fit=np.min(fitness)
         if(gen%10==0):
@@ -132,7 +132,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
             counter+=1
                 
         parents = select_parents_roulette(pop, fitness, 2 * pop_size)
-        pop=crossover(parents,pop_size,seed)
+        pop=crossover(parents,pop_size,seed,a1,b1,c1,a2,b2,c2)
         pop=mutate(pop,seed=seed,mutation_rate=0.2,mutation_strength=min_fit/5)
         if counter == 3:
             print("⚠️  Stagnation detected. Injecting noise.")
@@ -140,10 +140,10 @@ def solve_3equation_3unknown(pop_size,generation,seed):
             counter = 0
 
         
-        if(np.min(fitness)<1e-15):
+        if(np.min(fitness)<1e-18):
             break
 
-    final_fitness = fitness_total(pop,pop_size)
+    final_fitness = fitness_total(pop,pop_size,a1,b1,c1,a2,b2,c2)
     best_idx = np.argmin(final_fitness)
     best_solution = pop[best_idx]
     best_fit = final_fitness[best_idx]
@@ -154,8 +154,17 @@ def solve_3equation_3unknown(pop_size,generation,seed):
     print(f"last gen: {gen+1}")
     print(f"  Fitness = {best_fit:.6f}")
 
-
-solve_3equation_3unknown(500,10000,432)
+print("___________________________")
+print("a1*x+b1*y+c1=0")
+print("a2*x+b2*y+c2=0")
+print("___________________________")
+a1=int(input("Enter a1 :"))
+b1=int(input("Enter b1 :"))
+c1=int(input("Enter c1 :"))
+a2=int(input("Enter a2 :"))
+b2=int(input("Enter b2 :"))
+c2=int(input("Enter c2 :"))
+solve_3equation_3unknown(500,10000,43,a1,b1,c1,a2,b2,c2)
 
 
 
