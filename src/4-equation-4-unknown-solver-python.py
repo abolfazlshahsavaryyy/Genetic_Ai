@@ -151,7 +151,7 @@ def mutate(pop, mutation_rate=0.1, mutation_strength=10.0, seed=None):
 ######################################################################################
 def solve_4equation_4unknown(pop_size,generation,seed):
     pop=init(pop_size,seed)
-    pop=standard_pop(pop,pop_size)
+    #pop=standard_pop(pop,pop_size)
     counter=0
     fitness_before=0
     min_fit=0
@@ -161,8 +161,8 @@ def solve_4equation_4unknown(pop_size,generation,seed):
         fitness_before=min_fit
         min_fit=np.min(fitness)
         print(f"Generation {gen+1}:")
-        print(f"  ➤ Min Fitness: {min_fit:.11f}")
-        print(f"  ➤ Max Fitness: {np.max(fitness):.11f}")
+        print(f"  ➤ Min Fitness: {min_fit:.25f}")
+        print(f"  ➤ Max Fitness: {np.max(fitness):.25f}")
         if(np.abs(min_fit-fitness_before)>min_fit/200):
             fitness_before=min_fit
             counter=0

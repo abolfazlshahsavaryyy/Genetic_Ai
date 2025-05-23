@@ -50,16 +50,16 @@ def standard_pop(pop,pop_size):
         
 def equation1(x,y,z):
     
-    res=(6*x) + (-2*y) + (8*z) - 20000
+    res=(6*x) + (-2*y) + (8*z) - 20
     return res
 def equation2(x,y,z):
 
-    res=(y) + (8*x) * (z) +1000#𝑦 + 8𝑥 × 𝑧 = −1
+    res=(y) + (8*x) * (z) +1#𝑦 + 8𝑥 × 𝑧 = −1
     return res
 
 def equation3(x,y,z):
 
-    res = (2*z)*(6/x) + (1.5*y) - 6000
+    res = (2*z)*(6/x) + (1.5*y) - 6
     return res
 
 def fitness_one(x,y,z):
@@ -137,10 +137,10 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         fitness=fitness_total(pop,pop_size)
         fitness_before=min_fit
         min_fit=np.min(fitness)
-        if(gen%10==1):
-            print(f"Generation {gen+1}:")
-            print(f"  ➤ Min Fitness: {min_fit:.6f}")
-            print(f"  ➤ Max Fitness: {np.max(fitness):.6f}")
+        
+        print(f"Generation {gen+1}:")
+        print(f"  ➤ Min Fitness: {min_fit:.25f}")
+        print(f"  ➤ Max Fitness: {np.max(fitness):.25f}")
         if(np.abs(min_fit-fitness_before)>min_fit/200):
             fitness_before=min_fit
             counter=0
@@ -150,11 +150,11 @@ def solve_3equation_3unknown(pop_size,generation,seed):
         parents = select_parents_roulette(pop, fitness, 2 * pop_size)
         pop=crossover(parents,pop_size,seed)
         pop=mutate(pop,seed=seed,mutation_strength=min_fit/5,mutation_rate=0.2)
-        if counter == 3:
+        if (counter == 15 and gen<1000):
             print("⚠️  Stagnation detected. Injecting noise.")
-            pop = mutate(pop, mutation_rate=1, mutation_strength=min_fit/10)
+            pop = mutate(pop, mutation_rate=1, mutation_strength=gen^6)
             counter = 0
-        if(np.min(fitness)<1e-8):
+        if(np.min(fitness)<1e-18):
             break
 
     final_fitness = fitness_total(pop,pop_size)
@@ -172,7 +172,7 @@ def solve_3equation_3unknown(pop_size,generation,seed):
 
 
 
-solve_3equation_3unknown(500,2000,12)
+solve_3equation_3unknown(1000,2000,34)
 
 
 
